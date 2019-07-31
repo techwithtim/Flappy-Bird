@@ -1,3 +1,11 @@
+"""
+The classic game of flappy bird. Make with python
+and pygame. Features pixel perfect collision using masks :o
+
+Date Modified:  Jul 30, 2019
+Author: Tech With Tim
+Estimated Work Time: 5 hours (1 just for that damn collision)
+"""
 import pygame
 import random
 import os
@@ -27,6 +35,12 @@ class Bird:
     ROT_VEL = 20
 
     def __init__(self, x, y):
+        """
+        Initialize the object
+        :param x: starting x pos (int)
+        :param y: starting y pos (int)
+        :return: None
+        """
         self.x = x
         self.y = y
         self.gravity = 9.8
@@ -40,6 +54,7 @@ class Bird:
     def jump(self):
         """
         make the bird jump
+        :return: None
         """
         self.vel = -10.5
         self.tick_count = 0
@@ -48,11 +63,14 @@ class Bird:
     def move(self):
         """
         make the bird move
+        :return: None
         """
         self.tick_count += 1
 
+        # for downward acceleration
         displacement = self.vel*(self.tick_count) + 0.5*(3)*(self.tick_count)**2  # calculate displacement
 
+        # terminal velocity
         if displacement >= 16:
             displacement = (displacement/abs(displacement)) * 16
 
@@ -71,9 +89,12 @@ class Bird:
     def draw(self, win):
         """
         draw the bird
+        :param win: pygame window or surface
+        :return: None
         """
         self.img_count += 1
 
+        # For animation of bird, loop through three images
         if self.img_count <= 10:
             self.img = self.IMGS[0]
         elif self.img_count <= 20:
@@ -84,20 +105,20 @@ class Bird:
             self.img = self.IMGS[2]
             self.img_count = 0
 
-        #pygame.draw.rect(win, (255,0,0),(self.x, self.y, self.img.get_width(), self.img.get_height()),4)
         # tilt the bird
         blitRotateCenter(win, self.img, (self.x, self.y), self.tilt)
 
-    def die(self):
-        pass
-
     def get_mask(self):
+        """
+        gets the mask for the current image of the bird
+        :return: None
+        """
         return pygame.mask.from_surface(self.img)
 
 
 class Pipe():
     """
-    represnts a pipe object
+    represents a pipe object
     """
     WIN_HEIGHT = WIN_HEIGHT
     WIN_WIDTH = WIN_WIDTH
@@ -143,6 +164,11 @@ class Pipe():
         self.x -= self.VEL
 
     def draw(self, win):
+        """
+        draw both the top and bottom of the pipe
+        :param win: pygame window/surface
+        :return: None
+        """
         # draw top
         win.blit(self.PIPE_TOP, (self.x, self.top))
         # draw bottom
@@ -170,17 +196,29 @@ class Pipe():
         return False
 
 class Base:
+    """
+    Represnts the moving floor of the game
+    """
     VEL = 5
     WIN_WIDTH = WIN_WIDTH
     WIDTH = base_img.get_width()
     IMG = base_img
 
     def __init__(self, y):
+        """
+        Initialize the object
+        :param y: int
+        :return: None
+        """
         self.y = y
         self.x1 = 0
         self.x2 = self.WIDTH
 
     def move(self):
+        """
+        move floor so it looks like its scrolling
+        :return: None
+        """
         self.x1 -= self.VEL
         self.x2 -= self.VEL
         if self.x1 + self.WIDTH < 0:
@@ -190,12 +228,24 @@ class Base:
             self.x2 = self.x1 + self.WIDTH
 
     def draw(self, win):
+        """
+        Draw the floor. This is two images that move together.
+        :param win: the pygame surface/window
+        :return: None
+        """
         win.blit(self.IMG, (self.x1, self.y))
         win.blit(self.IMG, (self.x2, self.y))
 
 
 def blitRotateCenter(surf, image, topleft, angle):
-
+    """
+    Rotate a surface and blit it to the window
+    :param surf: the surface to blit to
+    :param image: the image surface to rotate
+    :param topLeft: the top left position of the image
+    :param angle: a float value for angle
+    :return: None
+    """
     rotated_image = pygame.transform.rotate(image, angle)
     new_rect = rotated_image.get_rect(center = image.get_rect(topleft = topleft).center)
 
@@ -234,6 +284,7 @@ def draw_window(win, bird, pipes, base, score):
     :param bird: a Bird object
     :param pipes: List of pipes
     :param score: score of the game (int)
+    :return: None
     """
     win.blit(bg_img, (0,0))
 
