@@ -36,6 +36,7 @@ class Bird:
     MAX_ROTATION = 25
     IMGS = bird_images
     ROT_VEL = 20
+    ANIMATION_TIME = 5
 
     def __init__(self, x, y):
         """
@@ -98,15 +99,23 @@ class Bird:
         self.img_count += 1
 
         # For animation of bird, loop through three images
-        if self.img_count <= 10:
+        if self.img_count <= self.ANIMATION_TIME:
             self.img = self.IMGS[0]
-        elif self.img_count <= 20:
+        elif self.img_count <= self.ANIMATION_TIME*2:
             self.img = self.IMGS[1]
-        elif self.img_count <= 30:
+        elif self.img_count <= self.ANIMATION_TIME*3:
             self.img = self.IMGS[2]
-        elif self.img_count == 31:
-            self.img = self.IMGS[2]
+        elif self.img_count <= self.ANIMATION_TIME*4:
+            self.img = self.IMGS[1]
+        elif self.img_count == self.ANIMATION_TIME*4 + 1:
+            self.img = self.IMGS[0]
             self.img_count = 0
+
+        # so when bird is nose diving it isn't flapping
+        if self.tilt <= -80:
+            self.img = self.IMGS[1]
+            self.img_count = self.ANIMATION_TIME*2
+
 
         # tilt the bird
         blitRotateCenter(win, self.img, (self.x, self.y), self.tilt)
@@ -314,12 +323,13 @@ def main(win):
     :param win: pygame window surface
     :return: None
     """
-    bird = Bird(230,50)
+    bird = Bird(230,350)
     base = Base(FLOOR)
     pipes = [Pipe(700)]
     score = 0
 
     clock = pygame.time.Clock()
+    start = False
     lost = False
 
     run = True
@@ -330,38 +340,44 @@ def main(win):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+                pygame.quit()
+                quit()
                 break
 
             if event.type == pygame.KEYDOWN and not lost:
                 if event.key == pygame.K_SPACE:
+                    if not start:
+                        start = True
                     bird.jump()
 
         # Move Bird, base and pipes
-        bird.move()
+        if start:
+            bird.move()
         if not lost:
             base.move()
 
-            rem = []
-            add_pipe = False
-            for pipe in pipes:
-                pipe.move()
-                # check for collision
-                if pipe.collide(bird, win):
-                    lost = True
+            if start:
+                rem = []
+                add_pipe = False
+                for pipe in pipes:
+                    pipe.move()
+                    # check for collision
+                    if pipe.collide(bird, win):
+                        lost = True
 
-                if pipe.x + pipe.PIPE_TOP.get_width() < 0:
-                    rem.append(pipe)
+                    if pipe.x + pipe.PIPE_TOP.get_width() < 0:
+                        rem.append(pipe)
 
-                if not pipe.passed and pipe.x < bird.x:
-                    pipe.passed = True
-                    add_pipe = True
+                    if not pipe.passed and pipe.x < bird.x:
+                        pipe.passed = True
+                        add_pipe = True
 
-            if add_pipe:
-                score += 1
-                pipes.append(Pipe(WIN_WIDTH))
+                if add_pipe:
+                    score += 1
+                    pipes.append(Pipe(WIN_WIDTH))
 
-            for r in rem:
-                pipes.remove(r)
+                for r in rem:
+                    pipes.remove(r)
 
 
         if bird.y + bird_images[0].get_height() - 10 >= FLOOR:
