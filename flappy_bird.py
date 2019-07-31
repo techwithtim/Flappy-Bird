@@ -10,11 +10,14 @@ import pygame
 import random
 import os
 import time
+pygame.font.init()  # init font
 
 WIN_WIDTH = 600
 WIN_HEIGHT = 800
 PIPE_VEL = 3
 FLOOR = 730
+STAT_FONT = pygame.font.SysFont("comicsans", 50)
+END_FONT = pygame.font.SysFont("comicsans", 70)
 
 WIN = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
 pygame.display.set_caption("Flappy Bird")
@@ -152,7 +155,7 @@ class Pipe():
         set the height of the pipe, from the top of the screen
         :return: None
         """
-        self.height = random.randrange(100, 500)
+        self.height = random.randrange(50, 450)
         self.top = self.height - self.PIPE_TOP.get_height()
         self.bottom = self.height + self.GAP
 
@@ -266,6 +269,7 @@ def end_screen(win):
     :return: None
     """
     run = True
+    text_label = END_FONT.render("Press Space to Restart", 1, (255,255,255))
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -273,6 +277,9 @@ def end_screen(win):
 
             if event.type == pygame.KEYDOWN:
                 main(win)
+
+        win.blit(text_label, (WIN_WIDTH/2 - text_label.get_width()/2, 500))
+        pygame.display.update()
 
     pygame.quit()
     quit()
@@ -294,6 +301,10 @@ def draw_window(win, bird, pipes, base, score):
     base.draw(win)
     bird.draw(win)
 
+    # score
+    score_label = STAT_FONT.render("Score: " + str(score),1,(255,255,255))
+    win.blit(score_label, (WIN_WIDTH - score_label.get_width() - 15, 10))
+
     pygame.display.update()
 
 
@@ -306,6 +317,7 @@ def main(win):
     bird = Bird(230,50)
     base = Base(FLOOR)
     pipes = [Pipe(700)]
+    score = 0
 
     clock = pygame.time.Clock()
     lost = False
@@ -314,7 +326,6 @@ def main(win):
     while run:
         pygame.time.delay(30)
         clock.tick(60)
-        draw_window(WIN, bird, pipes, base, 0)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -344,17 +355,19 @@ def main(win):
                 if not pipe.passed and pipe.x < bird.x:
                     pipe.passed = True
                     add_pipe = True
+
             if add_pipe:
+                score += 1
                 pipes.append(Pipe(WIN_WIDTH))
 
             for r in rem:
                 pipes.remove(r)
 
 
-        if bird.y + bird_images[0].get_height() >= FLOOR:
+        if bird.y + bird_images[0].get_height() - 10 >= FLOOR:
             break
 
-        #draw_window(WIN, bird, pipes, base, 0)
+        draw_window(WIN, bird, pipes, base, score)
 
     end_screen(WIN)
 
