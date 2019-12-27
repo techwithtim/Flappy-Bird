@@ -12,6 +12,7 @@ import os
 import time
 pygame.font.init()  # init font
 
+# adjusted resolution to be able to run on Mac OS Catalina
 WIN_WIDTH = 1200
 WIN_HEIGHT = 1200
 PIPE_VEL = 3
